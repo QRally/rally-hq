@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rally HQ - Targeted Messaging & Incident Portal</title>
+<style>
+  :root {
+    --bg-dark: #0a0c10;
+    --card-bg: #141820;
+    --border-color: #232936;
+    --accent-blue: #3d5afe;
+    --text-main: #ffffff;
+    --text-muted: #8a94a6;
+    --green-ok: #00e676;
+    --red-alert: #ff1744;
+    --orange-warn: #ff9800;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background-color: var(--bg-dark); color: var(--text-main); padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+
+  .hq-header { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; }
+  .hq-title { font-size: 18px; font-weight: 800; }
+  .hq-title span { background: var(--accent-blue); font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+
+  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 12px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .panel-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+
+  .input-group { display: flex; gap: 8px; align-items: center; }
+  .target-select { background: #090a0d; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: var(--orange-warn); font-size: 13px; font-weight: 800; width: 80px; text-align: center; }
+  .broadcast-input { background: #090a0d; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: #fff; font-size: 13px; font-weight: 600; flex: 1; }
+  
+  .preset-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .btn { border: none; border-radius: 6px; padding: 8px; font-size: 11px; font-weight: 700; cursor: pointer; color: #fff; background: #232936; }
+  .btn-primary { background: var(--accent-blue); grid-column: span 2; padding: 10px; font-size: 12px; }
+  .btn-all { background: #1c2333; border: 1px solid var(--accent-blue); color: var(--accent-blue); width: 100%; margin-top: 2px; }
+  .btn-all:hover { background: var(--accent-blue); color: #fff; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+  th { background: #1a1e28; color: var(--text-muted); padding: 8px; }
+  td { padding: 10px 8px; border-bottom: 1px solid var(--border-color); }
+  
+  .badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; display: inline-block; }
+  .badge-breach { background: rgba(255, 23, 68, 0.2); color: var(--red-alert); border: 1px solid var(--red-alert); }
+  .badge-fire { background: var(--red-alert); color: #fff; }
+  .badge-medical { background: var(--accent-blue); color: #fff; }
+  .badge-ok { background: #1b8a4c; color: #fff; }
+</style>
+</head>
+<body>
+
+  <div class="hq-header">
+    <div class="hq-title">RALLY HQ COMMAND PORTAL <span>EVENT MONITOR</span></div>
+    <div style="color: var(--green-ok); font-size: 12px; font-weight: 700;">● SYSTEM ACTIVE</div>
+  </div>
+
+  <div class="grid">
+    <!-- HQ Communication Control -->
+    <div class="panel">
+      <div class="panel-title">Targeted Crew Messaging</div>
+      
+      <label style="font-size: 11px; color: var(--text-muted);">Recipient Car # & Message:</label>
+      <div class="input-group">
+        <input type="text" id="target-car-input" class="target-select" value="15" placeholder="Car #">
+        <input type="text" id="hq-msg-input" class="broadcast-input" value="CHECK IN WITH HQ">
+      </div>
+      
+      <button class="btn btn-primary" onclick="sendMessage()">📡 TRANSMIT TO CAR(S)</button>
+
+      <button class="btn btn-all" onclick="setTarget('ALL')">📢 TARGET: ALL CARS</button>
+
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Quick Messages:</div>
+      <div class="preset-btns">
+        <button class="btn" onclick="setPreset('RECCE MODE ACTIVE - MAX 30 MPH')">Recce 30 MPH</button>
+        <button class="btn" onclick="setPreset('CHECK IN WITH HQ')">Check In HQ</button>
+        <button class="btn" onclick="setPreset('CAUTION: RED FLAG SS1')">Red Flag SS1</button>
+        <button class="btn" onclick="setPreset('PROCEED TO SERVICE PARK')">Return Service</button>
+      </div>
+    </div>
+
+    <!-- Speed Breaches & Emergency Log Stream -->
+    <div class="panel">
+      <div class="panel-title">Incident Log (Breaches & Status Alerts Only)</div>
+      <div style="overflow-y: auto; max-height: 420px; border: 1px solid var(--border-color); border-radius: 6px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Car</th>
+              <th>Event / Status</th>
+              <th>Speed</th>
+              <th>Location / Zone</th>
+            </tr>
+          </thead>
+          <tbody id="incident-rows">
+            <!-- Incidents populate here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Modular Integration -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      doc, 
+      setDoc, 
+      query, 
+      orderBy, 
+      limit, 
+      onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCLi3NMmoJJCeJFGU4oeABpQyivQe1Z6i0",
+      authDomain: "the-regulator-rally.firebaseapp.com",
+      databaseURL: "https://the-regulator-rally-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "the-regulator-rally",
+      storageBucket: "the-regulator-rally.firebasestorage.app",
+      messagingSenderId: "1026958520151",
+      appId: "1:1026958520151:web:1665550c6b9e3a8bf9d812"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Send Targeted Message to Firestore
+    window.sendMessage = async function() {
+      const msg = document.getElementById('hq-msg-input').value;
+      const target = document.getElementById('target-car-input').value.trim().toUpperCase() || 'ALL';
+      
+      try {
+        await setDoc(doc(db, "control_logs", "hq_broadcast"), {
+          message: msg,
+          target_car: target,
+          updated_at: new Date().toISOString()
+        });
+      } catch (e) { 
+        console.error("Error sending message:", e); 
+      }
+    };
+
+    window.setTarget = function(car) {
+      document.getElementById('target-car-input').value = car;
+    };
+
+    window.setPreset = function(txt) {
+      document.getElementById('hq-msg-input').value = txt;
+      sendMessage();
+    };
+
+    // Listen to logs, explicitly skipping PERIODIC_SYNC
+    const incidentQuery = query(collection(db, "telemetry_logs"), orderBy("timestamp", "desc"), limit(40));
+
+    onSnapshot(incidentQuery, (snapshot) => {
+      const tableBody = document.getElementById("incident-rows");
+      tableBody.innerHTML = "";
+
+      snapshot.forEach((docSnap) => {
+        const d = docSnap.data();
+        
+        // STRICT FILTER: Ignore standard periodic syncs
+        if (d.event_type === 'PERIODIC_SYNC') return;
+
+        const timeStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleTimeString() : '--:--:--';
+
+        let badgeHtml = '';
+        if (d.event_type === 'SPEED_BREACH' || d.speeding_breach) {
+          badgeHtml = `<span class="badge badge-breach">SPEED BREACH (${d.speed_mph} MPH)</span>`;
+        } else if (d.status_value === 'FIRE') {
+          badgeHtml = `<span class="badge badge-fire">🔥 FIRE ALERT</span>`;
+        } else if (d.status_value === 'MEDICAL') {
+          badgeHtml = `<span class="badge badge-medical">+ MEDICAL ALERT</span>`;
+        } else if (d.status_value === 'OK') {
+          badgeHtml = `<span class="badge badge-ok">✓ STATUS OK</span>`;
+        } else {
+          badgeHtml = `<span class="badge badge-ok">${d.event_type || 'ALERT'}</span>`;
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${timeStr}</td>
+          <td><strong>Car #${d.car_id || '15'}</strong></td>
+          <td>${badgeHtml}</td>
+          <td><strong>${d.speed_mph !== undefined ? d.speed_mph.toFixed(1) : '0.0'}</strong> MPH</td>
+          <td>${d.zone || 'Liaison Route'} (${d.location ? `${d.location.lat.toFixed(3)}, ${d.location.lng.toFixed(3)}` : 'N/A'})</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    });
+  </script>
+</body>
+</html>
