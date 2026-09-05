@@ -3,477 +3,182 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>REGULATOR - Motor Club Briefing & Portal</title>
+<title>Rally HQ - Targeted Messaging & Incident Portal</title>
 <style>
-  @page {
-    size: A4 portrait;
-    margin: 10mm;
-  }
-  
   :root {
-    --primary: #0f172a;
-    --accent: #2563eb;
-    --accent-green: #10b981;
-    --text-dark: #1e293b;
-    --text-light: #64748b;
-    --bg-subtle: #f8fafc;
-    --border: #e2e8f0;
+    --bg-dark: #0a0c10;
+    --card-bg: #141820;
+    --border-color: #232936;
+    --accent-blue: #3d5afe;
+    --text-main: #ffffff;
+    --text-muted: #8a94a6;
+    --green-ok: #00e676;
+    --red-alert: #ff1744;
+    --orange-warn: #ff9800;
   }
 
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background-color: var(--bg-dark); color: var(--text-main); padding: 12px; display: flex; flex-direction: column; gap: 12px; }
 
-  body {
-    background: #0b0f19;
-    color: var(--text-dark);
-    font-size: 10pt;
-    line-height: 1.4;
-    padding: 12px 8px;
-    display: flex;
-    justify-content: center;
-  }
+  .hq-header { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; }
+  .hq-title { font-size: 18px; font-weight: 800; }
+  .hq-title span { background: var(--accent-blue); font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
 
-  .page-container {
-    width: 100%;
-    max-width: 820px;
-    background: #ffffff;
-    padding: 16px;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    overflow: hidden; /* Prevents horizontal scroll bleed */
-  }
+  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 12px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
 
-  /* Header Section */
-  .header {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    border-bottom: 3px solid var(--accent);
-    padding-bottom: 12px;
-    margin-bottom: 16px;
-  }
+  .panel { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .panel-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
 
-  @media (min-width: 600px) {
-    .header {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-    .page-container {
-      padding: 24px;
-    }
-  }
+  .input-group { display: flex; gap: 8px; align-items: center; }
+  .target-select { background: #090a0d; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: var(--orange-warn); font-size: 13px; font-weight: 800; width: 80px; text-align: center; }
+  .broadcast-input { background: #090a0d; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: #fff; font-size: 13px; font-weight: 600; flex: 1; }
+  
+  .preset-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .btn { border: none; border-radius: 6px; padding: 8px; font-size: 11px; font-weight: 700; cursor: pointer; color: #fff; background: #232936; }
+  .btn-primary { background: var(--accent-blue); grid-column: span 2; padding: 10px; font-size: 12px; }
+  .btn-all { background: #1c2333; border: 1px solid var(--accent-blue); color: var(--accent-blue); width: 100%; margin-top: 2px; }
+  .btn-all:hover { background: var(--accent-blue); color: #fff; }
 
-  .title-group h1 {
-    font-size: 22pt;
-    font-weight: 900;
-    color: var(--primary);
-    letter-spacing: -0.5px;
-    line-height: 1;
-  }
-
-  .title-group .subtitle {
-    font-size: 9pt;
-    font-weight: 700;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 4px;
-  }
-
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #ecfdf5;
-    color: #047857;
-    border: 1px solid #a7f3d0;
-    padding: 4px 8px;
-    border-radius: 20px;
-    font-size: 8pt;
-    font-weight: 700;
-    margin-top: 6px;
-  }
-
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    background-color: var(--accent-green);
-    border-radius: 50%;
-  }
-
-  /* Action Buttons / Portal Links */
-  .portal-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  @media (min-width: 520px) {
-    .portal-actions {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  .btn-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 12px 14px;
-    border-radius: 6px;
-    text-decoration: none;
-    transition: transform 0.2s ease;
-    text-align: center;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #ffffff;
-    border: 1px solid #1d4ed8;
-  }
-
-  .btn-dark {
-    background: var(--primary);
-    color: #ffffff;
-    border: 1px solid #020617;
-  }
-
-  .btn-title {
-    font-size: 10pt;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-  }
-
-  .btn-desc {
-    font-size: 8pt;
-    opacity: 0.85;
-    margin-top: 2px;
-    word-break: break-all;
-  }
-
-  /* Executive Summary Box */
-  .summary-box {
-    background: var(--bg-subtle);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--primary);
-    border-radius: 4px;
-    padding: 10px 12px;
-    margin-bottom: 16px;
-    font-size: 9pt;
-  }
-
-  /* Stat Badges */
-  .highlights-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-
-  .highlight-card {
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 4px;
-    background: #ffffff;
-    text-align: center;
-  }
-
-  .highlight-card .val {
-    font-size: 11pt;
-    font-weight: 900;
-    color: var(--accent);
-  }
-
-  .highlight-card .lbl {
-    font-size: 6.5pt;
-    font-weight: 700;
-    color: var(--text-light);
-    text-transform: uppercase;
-  }
-
-  @media (min-width: 520px) {
-    .highlight-card .val { font-size: 13pt; }
-    .highlight-card .lbl { font-size: 7.5pt; }
-  }
-
-  /* Content Sections */
-  .content-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  @media (min-width: 680px) {
-    .content-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-  }
-
-  .section-title {
-    font-size: 10pt;
-    font-weight: 800;
-    color: var(--primary);
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 4px;
-    margin-bottom: 8px;
-  }
-
-  .feature-list {
-    list-style: none;
-  }
-
-  .feature-list li {
-    margin-bottom: 8px;
-    position: relative;
-    padding-left: 14px;
-    font-size: 8.8pt;
-  }
-
-  .feature-list li::before {
-    content: "■";
-    position: absolute;
-    left: 0;
-    color: var(--accent);
-    font-size: 7pt;
-    top: 2px;
-  }
-
-  .feature-list strong {
-    color: var(--primary);
-  }
-
-  /* Responsive Table Container */
-  .table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 8.5pt;
-    min-width: 280px;
-  }
-
-  th {
-    background: var(--primary);
-    color: #ffffff;
-    text-align: left;
-    padding: 6px 8px;
-    font-weight: 700;
-  }
-
-  td {
-    padding: 6px 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  tr:nth-child(even) td {
-    background: var(--bg-subtle);
-  }
-
-  /* Technical Footer Block */
-  .tech-block {
-    margin-bottom: 16px;
-  }
-
-  .tech-block p {
-    font-size: 8.5pt;
-    color: var(--text-dark);
-  }
-
-  /* Footer */
-  .footer {
-    border-top: 1px solid var(--border);
-    padding-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 8pt;
-    color: var(--text-light);
-  }
-
-  @media (min-width: 520px) {
-    .footer {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-  }
-
-  .contact-info {
-    font-weight: 700;
-    color: var(--primary);
-  }
-
-  /* Print Optimizations */
-  @media print {
-    body {
-      background: none;
-      padding: 0;
-    }
-    .page-container {
-      max-width: 100%;
-      box-shadow: none;
-      padding: 0;
-    }
-    .content-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    }
-    .portal-actions {
-      grid-template-columns: 1fr 1fr;
-    }
-    .btn-card {
-      border: 1px solid var(--primary) !important;
-      color: var(--primary) !important;
-      background: none !important;
-    }
-  }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+  th { background: #1a1e28; color: var(--text-muted); padding: 8px; }
+  td { padding: 10px 8px; border-bottom: 1px solid var(--border-color); }
+  
+  .badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; display: inline-block; }
+  .badge-breach { background: rgba(255, 23, 68, 0.2); color: var(--red-alert); border: 1px solid var(--red-alert); }
+  .badge-fire { background: var(--red-alert); color: #fff; }
+  .badge-medical { background: var(--accent-blue); color: #fff; }
+  .badge-ok { background: #1b8a4c; color: #fff; }
 </style>
 </head>
 <body>
 
-<div class="page-container">
+  <div class="hq-header">
+    <div class="hq-title">RALLY HQ COMMAND PORTAL <span>EVENT MONITOR</span></div>
+    <div style="color: var(--green-ok); font-size: 12px; font-weight: 700;">● SYSTEM ACTIVE</div>
+  </div>
 
-  <!-- Header -->
-  <div class="header">
-    <div class="title-group">
-      <h1>REGULATOR</h1>
-      <div class="subtitle">Dynamic Speed Governor & Telemetry System</div>
-      <div class="status-badge">
-        <span class="status-dot"></span> Firebase Live Engine Connected
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-title">Targeted Crew Messaging</div>
+      
+      <label style="font-size: 11px; color: var(--text-muted);">Recipient Car # & Message:</label>
+      <div class="input-group">
+        <input type="text" id="target-car-input" class="target-select" value="15" placeholder="Car #">
+        <input type="text" id="hq-msg-input" class="broadcast-input" value="CHECK IN WITH HQ">
+      </div>
+      
+      <button class="btn btn-primary" onclick="sendMessage()">📡 TRANSMIT TO CAR(S)</button>
+      <button class="btn btn-all" onclick="setTarget('ALL')">📢 TARGET: ALL CARS</button>
+
+      <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Quick Messages:</div>
+      <div class="preset-btns">
+        <button class="btn" onclick="setPreset('RECCE MODE ACTIVE - MAX 30 MPH')">Recce 30 MPH</button>
+        <button class="btn" onclick="setPreset('CHECK IN WITH HQ')">Check In HQ</button>
+        <button class="btn" onclick="setPreset('CAUTION: RED FLAG SS1')">Red Flag SS1</button>
+        <button class="btn" onclick="setPreset('PROCEED TO SERVICE PARK')">Return Service</button>
       </div>
     </div>
-    <div class="header-right">
-      <div style="font-size: 11pt; font-weight: 800; color: var(--primary);">qRally Ecosystem</div>
-      <div style="font-size: 8.5pt; color: var(--text-light);">
-        Zero-hardware compliance & safety.
-      </div>
-    </div>
-  </div>
 
-  <!-- Interactive Live App Launch Buttons -->
-  <div class="portal-actions">
-    <a href="https://qrally.github.io/recce-governor/" target="_blank" class="btn-card btn-primary">
-      <div class="btn-title">🚗 LAUNCH COMPETITOR DASH</div>
-      <div class="btn-desc">qrally.github.io/recce-governor/</div>
-    </a>
-    <a href="https://qrally.github.io/rally-hq/" target="_blank" class="btn-card btn-dark">
-      <div class="btn-title">🖥️ LAUNCH RALLY HQ MONITOR</div>
-      <div class="btn-desc">qrally.github.io/rally-hq/</div>
-    </a>
-  </div>
-
-  <!-- Executive Summary -->
-  <div class="summary-box">
-    <strong>Executive Brief:</strong> REGULATOR is a zero-hardware Progressive Web App (PWA) built for motor clubs and Clerks of the Course. Utilizing smartphone GPS, it automatically enforces geofenced speed limits across Service Parks, noise zones, and recce stages while streaming targeted HQ communications and safety telemetry.
-  </div>
-
-  <!-- Metric Badges -->
-  <div class="highlights-row">
-    <div class="highlight-card">
-      <div class="val">£0.00</div>
-      <div class="lbl">Hardware Cost</div>
-    </div>
-    <div class="highlight-card">
-      <div class="val">100%</div>
-      <div class="lbl">Smartphone Ready</div>
-    </div>
-    <div class="highlight-card">
-      <div class="val">LIVE</div>
-      <div class="lbl">Event Telemetry</div>
-    </div>
-  </div>
-
-  <!-- System Features & Table Grid -->
-  <div class="content-grid">
-    
-    <!-- Core Capabilities -->
-    <div>
-      <div class="section-title">Core Capabilities</div>
-      <ul class="feature-list">
-        <li>
-          <strong>Geofenced Speed Governance:</strong> Auto-detects Service Parks, noise zones, or recce stage bounds `[lat, lng]` and sets visual speed limits instantly on the competitor dashboard.
-        </li>
-        <li>
-          <strong>Event-Driven Telemetry:</strong> Transmits data to HQ <em>only</em> on speed breaches or alert triggers, keeping bandwidth low and HQ focused on incidents.
-        </li>
-        <li>
-          <strong>Targeted Command Messaging:</strong> Issue individual notices to a specific car (e.g., <em>"Car #1: Watch your speed"</em>) or 1-tap broadcasts to <strong>ALL CARS</strong> for emergency red flags.
-        </li>
-        <li>
-          <strong>Instant Crew SOS Controls:</strong> High-contrast <strong>OK</strong>, <strong>FIRE</strong>, and <strong>MEDICAL</strong> buttons log exact GPS coordinates formatted for emergency response.
-        </li>
-      </ul>
-    </div>
-
-    <!-- Operational Advantage Table -->
-    <div>
-      <div class="section-title">Operational Advantage</div>
-      <div class="table-wrapper">
+    <div class="panel">
+      <div class="panel-title">Incident Log (Breaches & Status Alerts Only)</div>
+      <div style="overflow-y: auto; max-height: 420px; border: 1px solid var(--border-color); border-radius: 6px;">
         <table>
           <thead>
             <tr>
-              <th>Feature</th>
-              <th>Traditional</th>
-              <th>REGULATOR</th>
+              <th>Time</th>
+              <th>Car</th>
+              <th>Event / Status</th>
+              <th>Speed</th>
+              <th>Location / Zone</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><strong>Deployment</strong></td>
-              <td>Hardware queues; physical fitting.</td>
-              <td><strong>Zero setup.</strong> Runs on smartphone.</td>
-            </tr>
-            <tr>
-              <td><strong>PR & Speeding</strong></td>
-              <td>Post-stage logs & late fines.</td>
-              <td><strong>Real-time</strong> dash warnings & breach logs.</td>
-            </tr>
-            <tr>
-              <td><strong>HQ Comms</strong></td>
-              <td>Phone calls or crowded groups.</td>
-              <td><strong>Direct</strong> targeted text alerts to dash.</td>
-            </tr>
-            <tr>
-              <td><strong>Logistics</strong></td>
-              <td>Post-event gear collection.</td>
-              <td><strong>Instant URL link.</strong> Nothing to collect.</td>
-            </tr>
+          <tbody id="incident-rows">
+            <!-- Incidents populate here -->
           </tbody>
         </table>
       </div>
     </div>
-
   </div>
 
-  <!-- Technical Summary -->
-  <div class="tech-block">
-    <div class="section-title">Technical Specifications</div>
-    <p>
-      Built on HTML5/JavaScript connected to a Firebase Firestore backend. Geofence tracking utilizes line-segment corridor calculations and Haversine distance formulas. Competitors simply open the web URL, enter their car number, and mount their phone on the dashboard.
-    </p>
-  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  <!-- Footer -->
-  <div class="footer">
-    <div><strong>qRally Motorsport Systems</strong> | Stage & Safety Management</div>
-    <div class="contact-info">Ready for Motor Club Demonstrations</div>
-  </div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCLi3NMmoJJCeJFGU4oeABpQyivQe1Z6i0",
+      authDomain: "the-regulator-rally.firebaseapp.com",
+      databaseURL: "https://the-regulator-rally-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "the-regulator-rally",
+      storageBucket: "the-regulator-rally.firebasestorage.app",
+      messagingSenderId: "1026958520151",
+      appId: "1:1026958520151:web:1665550c6b9e3a8bf9d812"
+    };
 
-</div>
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
+    window.sendMessage = async function() {
+      const msg = document.getElementById('hq-msg-input').value;
+      const target = document.getElementById('target-car-input').value.trim().toUpperCase() || 'ALL';
+      
+      try {
+        await setDoc(doc(db, "control_logs", "hq_broadcast"), {
+          message: msg,
+          target_car: target,
+          updated_at: new Date().toISOString()
+        });
+      } catch (e) { 
+        console.error("Transmission error:", e); 
+      }
+    };
+
+    window.setTarget = function(car) { document.getElementById('target-car-input').value = car; };
+    window.setPreset = function(txt) {
+      document.getElementById('hq-msg-input').value = txt;
+      sendMessage();
+    };
+
+    const incidentQuery = query(collection(db, "telemetry_logs"), orderBy("timestamp", "desc"), limit(40));
+
+    onSnapshot(incidentQuery, (snapshot) => {
+      const tableBody = document.getElementById("incident-rows");
+      tableBody.innerHTML = "";
+
+      snapshot.forEach((docSnap) => {
+        const d = docSnap.data();
+        if (d.event_type === 'PERIODIC_SYNC') return;
+
+        const timeStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleTimeString() : '--:--:--';
+
+        let badgeHtml = '';
+        if (d.event_type === 'SPEED_BREACH' || d.speeding_breach) {
+          badgeHtml = `<span class="badge badge-breach">SPEED BREACH (${d.speed_mph} MPH)</span>`;
+        } else if (d.status_value === 'FIRE') {
+          badgeHtml = `<span class="badge badge-fire">🔥 FIRE ALERT</span>`;
+        } else if (d.status_value === 'MEDICAL') {
+          badgeHtml = `<span class="badge badge-medical">+ MEDICAL ALERT</span>`;
+        } else if (d.status_value === 'OK') {
+          badgeHtml = `<span class="badge badge-ok">✓ STATUS OK</span>`;
+        } else {
+          badgeHtml = `<span class="badge badge-ok">${d.event_type || 'ALERT'}</span>`;
+        }
+
+        const locString = d.location && d.location.formatted 
+          ? d.location.formatted 
+          : (d.location ? `${d.location.lat.toFixed(4)}, ${d.location.lng.toFixed(4)}` : 'N/A');
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${timeStr}</td>
+          <td><strong>Car #${d.car_id || '15'}</strong></td>
+          <td>${badgeHtml}</td>
+          <td><strong>${d.speed_mph !== undefined ? d.speed_mph.toFixed(1) : '0.0'}</strong> MPH</td>
+          <td>${d.zone || 'Liaison Route'}<br><span style="font-size:10px; color:#666;">(${locString})</span></td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    });
+  </script>
 </body>
 </html>
