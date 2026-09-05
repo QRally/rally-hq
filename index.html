@@ -59,7 +59,6 @@
   </div>
 
   <div class="grid">
-    <!-- HQ Communication Control -->
     <div class="panel">
       <div class="panel-title">Targeted Crew Messaging</div>
       
@@ -70,7 +69,6 @@
       </div>
       
       <button class="btn btn-primary" onclick="sendMessage()">📡 TRANSMIT TO CAR(S)</button>
-
       <button class="btn btn-all" onclick="setTarget('ALL')">📢 TARGET: ALL CARS</button>
 
       <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">Quick Messages:</div>
@@ -82,7 +80,6 @@
       </div>
     </div>
 
-    <!-- Speed Breaches & Emergency Log Stream -->
     <div class="panel">
       <div class="panel-title">Incident Log (Breaches & Status Alerts Only)</div>
       <div style="overflow-y: auto; max-height: 420px; border: 1px solid var(--border-color); border-radius: 6px;">
@@ -104,19 +101,9 @@
     </div>
   </div>
 
-  <!-- Firebase Modular Integration -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-      getFirestore, 
-      collection, 
-      doc, 
-      setDoc, 
-      query, 
-      orderBy, 
-      limit, 
-      onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, doc, setDoc, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCLi3NMmoJJCeJFGU4oeABpQyivQe1Z6i0",
@@ -131,7 +118,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Send Targeted Message to Firestore
     window.sendMessage = async function() {
       const msg = document.getElementById('hq-msg-input').value;
       const target = document.getElementById('target-car-input').value.trim().toUpperCase() || 'ALL';
@@ -143,20 +129,16 @@
           updated_at: new Date().toISOString()
         });
       } catch (e) { 
-        console.error("Error sending message:", e); 
+        console.error("Transmission error:", e); 
       }
     };
 
-    window.setTarget = function(car) {
-      document.getElementById('target-car-input').value = car;
-    };
-
+    window.setTarget = function(car) { document.getElementById('target-car-input').value = car; };
     window.setPreset = function(txt) {
       document.getElementById('hq-msg-input').value = txt;
       sendMessage();
     };
 
-    // Listen to logs, explicitly skipping PERIODIC_SYNC
     const incidentQuery = query(collection(db, "telemetry_logs"), orderBy("timestamp", "desc"), limit(40));
 
     onSnapshot(incidentQuery, (snapshot) => {
@@ -165,8 +147,6 @@
 
       snapshot.forEach((docSnap) => {
         const d = docSnap.data();
-        
-        // STRICT FILTER: Ignore standard periodic syncs
         if (d.event_type === 'PERIODIC_SYNC') return;
 
         const timeStr = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleTimeString() : '--:--:--';
@@ -184,13 +164,17 @@
           badgeHtml = `<span class="badge badge-ok">${d.event_type || 'ALERT'}</span>`;
         }
 
+        const locString = d.location && d.location.formatted 
+          ? d.location.formatted 
+          : (d.location ? `${d.location.lat.toFixed(4)}, ${d.location.lng.toFixed(4)}` : 'N/A');
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${timeStr}</td>
           <td><strong>Car #${d.car_id || '15'}</strong></td>
           <td>${badgeHtml}</td>
           <td><strong>${d.speed_mph !== undefined ? d.speed_mph.toFixed(1) : '0.0'}</strong> MPH</td>
-          <td>${d.zone || 'Liaison Route'} (${d.location ? `${d.location.lat.toFixed(3)}, ${d.location.lng.toFixed(3)}` : 'N/A'})</td>
+          <td>${d.zone || 'Liaison Route'}<br><span style="font-size:10px; color:#666;">(${locString})</span></td>
         `;
         tableBody.appendChild(tr);
       });
